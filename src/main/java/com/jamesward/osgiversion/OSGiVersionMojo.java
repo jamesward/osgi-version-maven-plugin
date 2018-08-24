@@ -87,6 +87,11 @@ public class OSGiVersionMojo extends AbstractMojo {
                     throw new MalformedVersionException(mvnVersion);
             }
         }
+        
+        if(bndVersionSegments[3].startsWith("-")) {
+        	// remove leading dash from qualifier for readability
+        	bndVersionSegments[3] = bndVersionSegments[3].replaceFirst("-", "");
+        }
 
         return toVersionString(bndVersionSegments);
     }

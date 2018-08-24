@@ -29,9 +29,9 @@ public class UnsnapshotMojoTest extends AbstractMojoTestCase {
             osgiVersionMojo.calculateVersion("");
         } catch (OSGiVersionMojo.MalformedVersionException ignored) { }
 
-        assertEquals("1.2.3.beta1.2", osgiVersionMojo.calculateVersion("1.2.3-beta1-2"));
-        assertEquals("1.2.test", osgiVersionMojo.calculateVersion("1.2-test"));
-        assertEquals("1.2.SNAPSHOT", osgiVersionMojo.calculateVersion("1.2-SNAPSHOT"));
+        assertEquals("1.2.3.beta1-2", osgiVersionMojo.calculateVersion("1.2.3-beta1-2"));
+        assertEquals("1.2.0.test", osgiVersionMojo.calculateVersion("1.2-test"));
+        assertEquals("1.2.0.SNAPSHOT", osgiVersionMojo.calculateVersion("1.2-SNAPSHOT"));
     }
 
     public void testPlugin() throws Exception {
