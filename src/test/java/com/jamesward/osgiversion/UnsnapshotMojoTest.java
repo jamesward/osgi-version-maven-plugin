@@ -52,7 +52,7 @@ public class UnsnapshotMojoTest extends AbstractMojoTestCase {
         	   + "/META-INF/resources/webjars/bar/1.2.3-alpha-1,\\\n"
         	   + "/webjars-requirejs.js\n"
         	   + "Provide-Capability: foo;bar:List<String>=1.2.3.alpha-1\n"
-        	   + "Require-Capability: foobar;filter:=\"(barfoo=2.1.4.0)";
+        	   + "Require-Capability: foobar;filter:=\"(barfoo=2.1.4.0)\"";
 
         assertEquals(expected, mojo.project.getModel().getProperties().getProperty(OSGiVersionMojo.MANIFEST_OSGI));
     }
