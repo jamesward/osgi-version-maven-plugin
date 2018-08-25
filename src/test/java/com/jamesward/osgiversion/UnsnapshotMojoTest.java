@@ -43,8 +43,18 @@ public class UnsnapshotMojoTest extends AbstractMojoTestCase {
         assertNotNull(mojo);
 
         mojo.execute();
+       
+        String expected = 
+        		"Bundle-Version: 1.2.3.alpha-1\n"
+        	   + "Bundle-Description: \n"
+        	   + "-resourceonly:true\n"
+        	   + "WebJars-Resource:\\\n"
+        	   + "/META-INF/resources/webjars/bar/1.2.3-alpha-1,\\\n"
+        	   + "/webjars-requirejs.js\n"
+        	   + "Provide-Capability: foo;bar:List<String>=1.2.3.alpha-1\n"
+        	   + "Require-Capability: foobar;filter:=\"(barfoo=2.1.4.0)";
 
-        assertEquals("1.2.3.alpha1", mojo.project.getModel().getProperties().getProperty(OSGiVersionMojo.VERSION_OSGI));
+        assertEquals(expected, mojo.project.getModel().getProperties().getProperty(OSGiVersionMojo.MANIFEST_OSGI));
     }
 
 }

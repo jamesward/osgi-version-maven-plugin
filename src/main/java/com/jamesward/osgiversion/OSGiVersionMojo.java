@@ -1,5 +1,9 @@
 package com.jamesward.osgiversion;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -9,23 +13,43 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "osgi-version")
 public class OSGiVersionMojo extends AbstractMojo {
 
-    public static final String VERSION_OSGI = "version.osgi";
+    public static final String MANIFEST_OSGI = "manifest.osgi";
 
     @Component
     public MavenProject project;
 
     public void execute() throws MojoExecutionException {
-        String version = project.getVersion();
 
         try {
-            String osgiVersion = calculateVersion(version);
-            project.getProperties().setProperty(VERSION_OSGI, osgiVersion);
-            project.getModel().getProperties().setProperty(VERSION_OSGI, osgiVersion);
+        	String manifest = getManifest();
+            project.getProperties().setProperty(MANIFEST_OSGI, manifest);
+            project.getModel().getProperties().setProperty(MANIFEST_OSGI, manifest);
         } catch (MalformedVersionException | MalformedSegmentException | MalformedQualifierException e) {
             throw new MojoExecutionException("Could not convert version to OSGi version", e);
         }
     }
-
+    
+    
+    /**
+     * @param dependencies a list of Maven dependencies defined for a project
+     * @return an empty String if dependencies had size == 0, a String containing all dependencies separated by a comma, where each dependency has the form groupId;filter:="(artifactId=version.osgi)"
+     * e.g., the maven coordinates org.test:testartifact.test:1.2.3 will be turned into org.test;filter:="(testartifact.test=1.2.3.0)"
+     * @throws MalformedVersionException
+     * @throws MalformedSegmentException
+     * @throws MalformedQualifierException
+     */
+    public String calculateDependenciesString(List<Dependency> dependencies) throws MalformedVersionException, MalformedSegmentException, MalformedQualifierException {
+    	List<String> result = new ArrayList<>();
+    	
+    	for (Dependency dependency : dependencies) {
+    		// Create string for this dependency in the form:
+    		// <groupId>;filter:="(<artifactId>=<version.osgi>)"
+    		result.add(dependency.getGroupId() + ";filter:=\"(" + dependency.getArtifactId() + "=" + calculateVersion(dependency.getVersion()) + ")\"");
+		}
+    	
+    	return String.join(",", result);
+    }
+    
     /**
      * @param mvnVersion
      * @return a version that is compliant tothe description of OSGi versions by https://osgi.org/specification/osgi.core/7.0.0/framework.module.html#i2655136
@@ -33,7 +57,7 @@ public class OSGiVersionMojo extends AbstractMojo {
     public String calculateVersion(String mvnVersion) throws MalformedVersionException, MalformedSegmentException, MalformedQualifierException {
 
         // default OSGi version
-        String[] bndVersionSegments = {"0", "0", "0", Long.toString(System.currentTimeMillis())};
+        String[] bndVersionSegments = {"0", "0", "0", "0"};
 
         if(mvnVersion == null || mvnVersion.length() == 0) {
             // malformed version -> error message?
@@ -92,8 +116,8 @@ public class OSGiVersionMojo extends AbstractMojo {
         	// remove leading dash from qualifier for readability
         	bndVersionSegments[3] = bndVersionSegments[3].replaceFirst("-", "");
         }
-
-        return toVersionString(bndVersionSegments);
+        
+        return String.join(".", bndVersionSegments);
     }
 
 
@@ -129,20 +153,38 @@ public class OSGiVersionMojo extends AbstractMojo {
         }
         return wellFormedQualifier;
     }
-
+    
     /**
-     * @return the values of the array with dots in between as one String
+     * @return A string in the form of </br>
+     * Bundle-SymbolicName: ${project.groupId}.${project.artifactId} </br>
+     * Bundle-Version: ${version.osgi} </br>
+     * Bundle-Description: ${project.description} </br>
+     * -resourceonly:true </br>
+     * WebJars-Resource:\ </br>
+     * 	/META-INF/resources/webjars/${project.artifactId}/${project.version},\ </br>
+     * 	/webjars-requirejs.js </br>
+     * Provide-Capability: ${project.groupId};${project.artifactId}:List<String>=${version.osgi} </br>
+     * Require-Capability: ${dependencies.osgi} </br>
+     * @throws MalformedVersionException
+     * @throws MalformedSegmentException
+     * @throws MalformedQualifierException
      */
-    private String toVersionString(String[] segments) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < segments.length; i++) {
-            String segment = segments[i];
-            sb.append(segment);
-            if(i != segments.length - 1) {
-                sb.append(".");
-            }
-        }
-        return sb.toString();
+    public String getManifest() throws MalformedVersionException, MalformedSegmentException, MalformedQualifierException {
+    	String osgiVersion = calculateVersion(project.getVersion());
+    	String osgiDependencies = calculateDependenciesString(project.getDependencies());
+    	
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("Bundle-SymbolicName: " + project.getGroupId() + "." + project.getArtifactId() + "\n");
+    	sb.append("Bundle-Version:	" + osgiVersion + "\n");
+    	sb.append("-resourceonly:true\n");
+    	sb.append("WebJars-Resource:\\\n");
+    	sb.append("/META-INF/resources/webjars/" + project.getArtifactId() + "/" + osgiVersion + ",\\\n");
+    	sb.append("/webjars-requirejs.js\n");
+    	sb.append("Provide-Capability: " + project.getGroupId() + ";" + project.getArtifactId() + ":List<String>=" + osgiVersion + "\n");
+    	
+    	if(osgiDependencies.length() != 0)
+    		sb.append("Require-Capability: " + osgiDependencies);
+    	return sb.toString();
     }
 
     public class MalformedVersionException extends Exception {
