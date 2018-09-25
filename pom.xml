@@ -10,7 +10,7 @@
 
     <groupId>com.jamesward</groupId>
     <artifactId>osgi-version-maven-plugin</artifactId>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>OSGi Version Maven Plugin</name>
     <description>Turns a version into an OSGi compatible version</description>
@@ -45,7 +45,7 @@
         <url>http://github.com/jamesward/osgi-version-maven-plugin</url>
         <connection>scm:git:https://github.com/jamesward/osgi-version-maven-plugin.git</connection>
         <developerConnection>scm:git:https://github.com/jamesward/osgi-version-maven-plugin.git</developerConnection>
-        <tag>osgi-version-maven-plugin-0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
