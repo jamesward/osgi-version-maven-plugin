@@ -24,5 +24,14 @@ public class ProjectStub extends MavenProjectStub {
         
         setDependencies(dependencies);
     }
+    
+    @Override
+    public void setDependencies(List<Dependency> dependencies) {
+    	getModel().setDependencies( dependencies );
+    }
+    
+    public List<Dependency> getDependencies() {
+        return getModel().getDependencies();
+    }
 
 }

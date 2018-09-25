@@ -43,8 +43,11 @@ public class OSGiVersionMojo extends AbstractMojo {
     	
     	for (Dependency dependency : dependencies) {
     		// Create string for this dependency in the form:
-    		// <groupId>;filter:="(<artifactId>=<version.osgi>)"
-    		result.add(dependency.getGroupId() + ";filter:=\"(" + dependency.getArtifactId() + "=" + calculateVersion(dependency.getVersion()) + ")\"");
+    		// org.webjars.osgi.deps;filter:="(&(groupId=<groupId>)(artifactId=<artifactId>)(version=<version.osgi>))"
+    		String groupId = dependency.getGroupId();
+    		String artifactId = dependency.getArtifactId();
+    		String version = calculateVersion(dependency.getVersion());
+    		result.add(String.format("org.webjars.osgi.deps;filter:=\"(&(groupId=%s)(artifactId=%s)(version=%s))", groupId, artifactId, version));
 		}
     	
     	return String.join(",", result);
@@ -163,27 +166,29 @@ public class OSGiVersionMojo extends AbstractMojo {
      * WebJars-Resource:\ </br>
      * 	/META-INF/resources/webjars/${project.artifactId}/${project.version},\ </br>
      * 	/webjars-requirejs.js </br>
-     * Provide-Capability: ${project.groupId};${project.artifactId}:List<String>=${version.osgi} </br>
+     * Provide-Capability: org.webjars.osgi.dep;projectId:List<String>=${project.groupId},artifactId:List<String>=${project.artifactId},version:List<String>=${version.osgi} </br>
      * Require-Capability: ${dependencies.osgi} </br>
      * @throws MalformedVersionException
      * @throws MalformedSegmentException
      * @throws MalformedQualifierException
      */
     public String getManifest() throws MalformedVersionException, MalformedSegmentException, MalformedQualifierException {
-    	String osgiVersion = calculateVersion(project.getVersion());
     	String osgiDependencies = calculateDependenciesString(project.getDependencies());
+    	String groupId = project.getGroupId();
+    	String artifactId = project.getArtifactId();
+    	String version = calculateVersion(project.getVersion());
     	
     	StringBuilder sb = new StringBuilder();
-    	sb.append("Bundle-SymbolicName: " + project.getGroupId() + "." + project.getArtifactId() + "\n");
-    	sb.append("Bundle-Version:	" + osgiVersion + "\n");
+    	sb.append(String.format("Bundle-SymbolicName: %s.%s\n", groupId, artifactId));
+    	sb.append(String.format("Bundle-Version: %s\n", version));
     	sb.append("-resourceonly:true\n");
     	sb.append("WebJars-Resource:\\\n");
-    	sb.append("/META-INF/resources/webjars/" + project.getArtifactId() + "/" + osgiVersion + ",\\\n");
+    	sb.append(String.format("/META-INF/resources/webjars/%s/%s,\\\n", artifactId, version));
     	sb.append("/webjars-requirejs.js\n");
-    	sb.append("Provide-Capability: " + project.getGroupId() + ";" + project.getArtifactId() + ":List<String>=" + osgiVersion + "\n");
+    	sb.append(String.format("Provide-Capability: org.webjars.osgi.deps;groupId:List<String>=%s,artifactId:List<String>=%s,version:List<String>=%s", groupId, artifactId, version));
     	
     	if(osgiDependencies.length() != 0)
-    		sb.append("Require-Capability: " + osgiDependencies);
+    		sb.append("\nRequire-Capability: " + osgiDependencies);
     	return sb.toString();
     }
 
