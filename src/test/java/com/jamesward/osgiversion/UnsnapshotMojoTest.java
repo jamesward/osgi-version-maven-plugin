@@ -3,6 +3,7 @@ package com.jamesward.osgiversion;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 import java.io.File;
+import java.util.concurrent.SynchronousQueue;
 
 public class UnsnapshotMojoTest extends AbstractMojoTestCase {
 
@@ -43,8 +44,18 @@ public class UnsnapshotMojoTest extends AbstractMojoTestCase {
         assertNotNull(mojo);
 
         mojo.execute();
+        
+        String expected = 
+        		"Bundle-SymbolicName: foo.bar\n" + 
+        		"Bundle-Version: 1.2.3.alpha1\n" + 
+        		"-resourceonly:true\n" + 
+        		"WebJars-Resource:\\\n" + 
+        		"/META-INF/resources/webjars/bar/1.2.3.alpha1,\\\n" + 
+        		"/webjars-requirejs.js\n" + 
+        		"Provide-Capability: org.webjars.osgi.deps;groupId:List<String>=foo,artifactId:List<String>=bar,version:List<String>=1.2.3.alpha1\n" + 
+        		"Require-Capability: org.webjars.osgi.deps;filter:=\"(&(groupId=foobar)(artifactId=barfoo)(version=2.1.4.0))";
 
-        assertEquals("1.2.3.alpha1", mojo.project.getModel().getProperties().getProperty(OSGiVersionMojo.VERSION_OSGI));
+        assertEquals(expected, mojo.project.getModel().getProperties().getProperty(OSGiVersionMojo.MANIFEST_OSGI));
     }
 
 }
