@@ -42,9 +42,9 @@
     </licenses>
 
     <scm>
-        <url>http://github.com/jamesward/unsnapshot-maven-plugin</url>
-        <connection>scm:git:https://github.com/jamesward/unsnapshot-maven-plugin.git</connection>
-        <developerConnection>scm:git:https://github.com/jamesward/unsnapshot-maven-plugin.git</developerConnection>
+        <url>http://github.com/jamesward/osgi-version-maven-plugin</url>
+        <connection>scm:git:https://github.com/jamesward/osgi-version-maven-plugin.git</connection>
+        <developerConnection>scm:git:https://github.com/jamesward/osgi-version-maven-plugin.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
